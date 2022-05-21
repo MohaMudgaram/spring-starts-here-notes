@@ -17,15 +17,15 @@
 	- ![0d3509600082b85f71b32cce65e70485.png](../_resources/0d3509600082b85f71b32cce65e70485.png)
 - Let’s start with the remembering how to add the beans into the Spring context using methods annotated with @Bean in the configuration class, as we discussed (step 1). We’ll add a parrot instance and a person instance. Once we have this project ready, we change it to establish the relationship between the two instances (step 2).
 - In the pom.xml file of the Maven project, we add the dependency for Spring context as you find it in the next code snippet:
-	`
+	```
 	<dependency>
 	   <groupId>org.springframework</groupId>
 	   <artifactId>spring-context</artifactId>
 	   <version>5.2.7.RELEASE</version>
 	</dependency>
-	`
+	```
 - We then define a class to describe the Parrot object and one to describe the Person. In the next code snippet, you find the definition of the Parrot class:
-	`
+	```
 	public class Parrot {
 
 	  private String name;
@@ -37,9 +37,9 @@
 		return "Parrot : " + name;
 	  }
 	}
-	`
+	```
 - In the next code snippet, you find the definition of the Person class:
-	`
+	```
 	public class Person {
 
 	  private String name;
@@ -47,10 +47,10 @@
 
 	  // Omitted getters and setters
 	}
-	`
+	```
 - The following listing shows you how to define the two beans using the @Bean annotation in the configuration class.
 - Defining the Person and the Parrot beans
-	`
+	```
 	@Configuration
 	public class ProjectConfig {
 
@@ -68,10 +68,10 @@
 		return p;
 	  }
 	}
-	`
+	```
 - You can now write a Main class, as presented in the following listing, and check that the two instances aren’t yet linked to one another.
 - The definition of the Main class
-	`
+	```
 	public class Main {
 
 	  public static void main(String[] args) {
@@ -93,7 +93,7 @@
 		System.out.println(
 		  "Person's parrot: " + person.getParrot());  ❻
 	  }}
-	`
+	```
 	❶ Creates an instance of the Spring context based on the configuration class
 	❷ Gets a reference to the Person bean from the Spring context
 	❸ Gets a reference to the Parrot bean from the Spring context
@@ -101,11 +101,11 @@
 	❺ Prints the parrot’s name to prove that the Parrot bean is in the context
 	❻ Prints the person’s parrot to prove that there’s not yet a relationship between the instances
 - When running this app, you’ll see a console output similar to the one presented in the next code snippet:
-	`
+	```
 	Person's name: Ella     ❶
 	Parrot's name: Koko     ❷
 	Person's parrot: null   ❸
-	`
+	```
 	❶ The Person bean is in the Spring context.
 	❷ The Parrot bean is in the Spring context.
 	❸ The relationship between the person and the parrot isn’t established.
@@ -118,7 +118,7 @@
 - We establish the relationship between the beans using **direct wiring**. This approach implies calling the method that returns the bean you want to set directly. You need to call this method from the one that defines the bean for which you set the dependency.
 	- ![55dc81a1f9de2b84ba1954e79e6e7f8a.png](../_resources/55dc81a1f9de2b84ba1954e79e6e7f8a.png)
 - Making a link between the beans with a direct method call
-	`
+	```
 	@Configuration
 	public class ProjectConfig {
 
@@ -137,13 +137,13 @@
 		return p;
 	  }
 	}
-	`
+	```
 	❶ Setting the reference of the parrot bean to the person’s parrot attribute
 - Running the same app, you’ll observe the output changed in the console. Now you find (see next snippet) that the second line shows that Ella (the person in the Spring context) owns Koko (the parrot in the Spring context):
-	`
+	```
 	Person's name: Ella
 	Person's parrot: Parrot : Koko    ❶
-	`
+	```
 	❶ We now observe the relationship between the person and the parrot has been established.
 - Doesn’t this mean that we create two instances of Parrot —one instance Spring creates and adds into its context and another one when the person() method makes the direct call to the parrot() method? No, we actually have only one parrot instance in this application overall.
 - Spring creates a parrot instance when it calls the first @Bean annotated method parrot(). Then, Spring creates a person instance when it calls the second @Bean annotated method person(). The second method, person(), directly calls the first method, parrot(). Does this mean two instances of type parrot are created?
@@ -153,7 +153,7 @@
 - When two methods annotated with @Bean call each other, Spring knows you want to create a link between the beans. If the bean already exists in the context (3A), Spring returns the existing bean without forwarding the call to the @Bean method. If the bean doesn’t exist (3B), Spring creates the bean and returns its reference.
 	- ![32b5ac2e5c3b5167b6a599ca5b932c41.png](../_resources/32b5ac2e5c3b5167b6a599ca5b932c41.png)
 - It’s actually quite easy to test this behavior. Just add a no-args constructor to the Parrot class and print a message into the console from it. How many times will the message be printed in the console? If the behavior is correct, you’ll see the message only once. Let’s do this experiment. In the next code snippet, I’ve changed the Parrot class to add a no-args constructor:
-	`
+	```
 	public class Parrot {
 
 	  private String name;
@@ -169,13 +169,13 @@
 		return "Parrot : " + name;
 	  }
 	}
-	`
+	```
 - Rerun the app. The output changed (see next code snippet), and now the “Parrot created” message appears as well. You’ll observe it appears only once, which proves that Spring manages the bean creation and calls the parrot() method only once:
-`
+```
 Parrot created
 Person's name: Ella
 Person's parrot: Parrot : Koko
-`
+```
 ## Wiring the beans using the @Bean annotated method’s parameters
 * * *
 In this section, I’ll show you an alternative approach to directly calling the **@Bean** method. Instead of directly calling the method that defines the bean we wish to refer to, we add a parameter to the method of the corresponding type of object, and we rely on Spring to provide us a value through that parameter.
@@ -184,7 +184,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 - By defining a parameter to the method, we instruct Spring to provide us a bean of the type of that parameter from its context. We can then use the provided bean (parrot) when creating the second one (person). This way we establish the has-A relationship between the two beans.
 	- ![764ee4154c1cac93338c05dd0937822e.png](../_resources/764ee4154c1cac93338c05dd0937822e.png)
 - In the next listing, you find the definition of the configuration class. Take a look at the person() method. It now receives a parameter of type Parrot, and I set the reference of that parameter to the returned person’s attribute. When calling the method, Spring knows it has to find a parrot bean in its context and inject its value into the parameter of the person() method.
-	`
+	```
 	@Configuration
 	public class ProjectConfig {
 
@@ -203,18 +203,18 @@ In this section, I’ll show you an alternative approach to directly calling the
 		return p;
 	  }
 	}
-	`
+	```
 	❶ Spring injects the parrot bean into this parameter.
 - I refer here to what we will from now on call dependency injection (DI). As its name suggests, DI is a technique involving the framework setting a value into a specific field or parameter. In our case, Spring sets a particular value into the parameter of the person() method when calling it and resolves a dependency of this method. DI is an application of the IoC principle, and IoC implies that the framework controls the application at execution.
 - An application that’s not using the IoC principle controls the execution and makes use of various dependencies. An application using the IoC principle allows a dependency to control its execution. The DI is such an example of control. The framework (a dependency) sets a value into a field of an object of the app.
 	- ![338fd4630001790b80476c3de3ea3c0b.png](../_resources/338fd4630001790b80476c3de3ea3c0b.png)
 - You’ll often use DI (and not only in Spring) because it’s a very comfortable way to manage object instances that are created and help us minimize the code we write when developing our apps.
 - When running the app, the output in your console will be similar to the next code snippet. You observe that the parrot Koko is indeed linked to the person Ella:
-	`
+	```
 	Parrot created
 	Person's name: Ella
 	Person's parrot: Parrot : Koko
-	`
+	```
 ## Using the @Autowired annotation to inject beans
 - In this section, we discuss another approach used to create a link between beans in the Spring context. You’ll often encounter this technique, which refers to an annotation named **@Autowired**, when you can change the class for which you define the bean (when this class is not part of a dependency). Using the **@Autowired** annotation, we mark an object’s property where we want Spring to inject a value from the context, and we mark this intention directly in the class that defines the object that needs the dependency. This approach makes it easier to see the relationship between the two objects than the alternatives.
 - There are three ways we can use the @Autowired annotation:
@@ -228,7 +228,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 - Using the @Autowired annotation over the field, we instruct Spring to provide a value for that field from its context. Spring creates the two beans, person and parrot, and injects the parrot object to the field of the bean of type Person.
 	- ![6a5a38b992a66a2464150188ca700860.png](../_resources/6a5a38b992a66a2464150188ca700860.png)
 - Let’s start with the classes defining our two objects: Person and Parrot. You find the definition of the Parrot class in the next code snippet:
-	`
+	```
 	@Component
 	public class Parrot {
 
@@ -241,9 +241,9 @@ In this section, I’ll show you an alternative approach to directly calling the
 		return "Parrot : " + name;
 	  }
 	}
-	`
+	```
 - We use the stereotype annotation as an alternative to creating the bean using the configuration class. When annotating a class with @Component, Spring knows it has to create an instance of that class and add it to its context. The next code snippet shows the definition of the Person class:
-	`
+	```
 	@Component
 	public class Person {
 
@@ -254,19 +254,19 @@ In this section, I’ll show you an alternative approach to directly calling the
 
 	  // Omitted getters and setters
 	}
-	`
+	```
 	❶ Annotating the field with @Autowired, we instruct Spring to inject an appropriate value from its context.
 - I’ve used stereotype annotations to add the beans in the Spring context for this example. I could have defined the beans using **@Bean**, but most often, in real-world scenarios, you’ll encounter **@Autowired** used together with stereotype annotations, so let’s focus on the approach that’s most useful for you.
 - To continue our example, we define a configuration class. I’ll name the configuration class ProjectConfig. Over this class, I’ll use the @ComponentScan annotation to tell Spring where to find the classes I’ve annotated with @Component. The next code snippet shows the definition of the configuration class:
-	`
+	```
 	@Configuration
 	@ComponentScan(basePackages = "beans")
 	public class ProjectConfig {
 
 	}
-	`
+	```
 - I’ll then use the main class, the same way I’ve used in the previous examples of this chapter, to prove that Spring injected the parrot bean’s reference correctly:
-	`
+	```
 	public class Main {
 
 	  public static void main(String[] args) {
@@ -279,16 +279,16 @@ In this section, I’ll show you an alternative approach to directly calling the
 		System.out.println("Person's parrot: " + p.getParrot());
 	  }
 	}
-	`
+	```
 - This will print in the app’s console something similar to the output presented next. The second line of the output proves that the parrot (in my case, named Koko) belongs to the person bean (named Ella):
-	`
+	```
 	Person's name: Ella
 	Person's parrot: Parrot : Koko
-	`
+	```
 - Why is this approach not desired in production code? It’s not totally wrong to use it, but you want to make sure you make your app maintainable and testable in production code. By injecting the value directly in the field:
 	- **you don’t have the option to make the field final** (see next code snippet), and this way, make sure no one can change its value after initialization:
 	- it’s **more difficult to manage the value yourself at initialization**.
-	`
+	```
 	@Component
 	public class Person {
 
@@ -298,7 +298,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 	  private final Parrot parrot;     ❶
 
 	}
-	`
+	```
 	❶ This doesn’t compile. You cannot define a final field without an initial value.
 ### Using @Autowired to inject the values through the constructor
 * * *
@@ -307,7 +307,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 - When you define a parameter of the constructor, Spring provides a bean from its context as a value to that parameter when calling the constructor.
 	- ![6c28a445a1bb14cc077a835eadc50f71.png](../_resources/6c28a445a1bb14cc077a835eadc50f71.png)
 - You only need to change the Person class, as presented in the following listing. You need to define a constructor for the class and annotate it with @Autowired. Now we can also make the parrot field final. You don’t need to make any changes to your configuration class.
-	`
+	```
 	@Component
 	public class Person {
 
@@ -323,20 +323,20 @@ In this section, I’ll show you an alternative approach to directly calling the
 	  // Omitted getters and setters
 
 	}
-	`
+	```
 	❶ We can now make the field final to ensure its value cannot be changed after initialization.
 	❷ We use the @Autowired annotation over the constructor.
 - As you can see in the next code snippet, the person owns the parrot, so Spring established the link between the two instances correctly:
-	`
+	```
 	Person's name: Ella
 	Person's parrot: Parrot : Koko
-	`
+	```
 - Starting with Spring version 4.3, when you only have one constructor in the class, you can omit writing the @Autowired annotation.
 ### Using dependency injection through the setter
 * * *
 - You won’t often find developers applying the approach of using the setter for dependency injection. This approach has more disadvantages than advantages: it’s more challenging to read, it doesn’t allow you to make the field final, and it doesn’t help you in making the testing easier. Even so, I wanted to mention this possibility. You might encounter it at some point, and I don’t want you to wonder about its existence then. Even if it’s not something I recommend, I have seen this used in a couple of old apps.
 - You’ll find an example of using the setter injection. You’ll find that I only needed to change the Person class to implement this. In the next code snippet, I used the @Autowired annotation on the setter:
-	`
+	```
 	@Component
 	public class Person {
 
@@ -351,7 +351,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 		this.parrot = parrot;
 	  }
 	}
-	`
+	```
 - When running the app, you’ll get the same output as the previously discussed examples of this section.
 ## Dealing with circular dependencies
 * * *
@@ -362,7 +362,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 - A circular dependency is easy to avoid. You just need to make sure you don’t define objects whose creation depends on the other. Having dependencies from one object to another like this is a bad design of classes. In such a case, you need to rewrite your code.
 - As presented in the next code snippets, I made the Parrot bean’s instantiation dependent on the Person bean and vice-versa.
 - The Person class:
-	`
+	```
 	@Component
 	public class Person {
 
@@ -376,10 +376,10 @@ In this section, I’ll show you an alternative approach to directly calling the
 	  // Omitted code
 
 	}
-	`
+	```
 	❶ To create the Person instance, Spring needs to have a Parrot bean.
 - The Parrot class:
-	`
+	```
 	public class Parrot {
 
 	  private String name = "Koko";
@@ -393,13 +393,13 @@ In this section, I’ll show you an alternative approach to directly calling the
 
 	  // Omitted code
 	}
-	`
+	```
 	❶ To create the Parrot instance, Spring needs to have a Person bean.
 - Running the app with such a configuration will lead to an exception like the one presented in the next snippet:
-	`
+	```
 	Caused by: org.springframework.beans.factory.BeanCurrentlyInCreationException: Error creating bean with name 'parrot': Requested bean is currently in creation: Is there an unresolvable circular reference?
 		at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.beforeSingletonCreation(DefaultSingletonBeanRegistry.java:347)
-	`
+	```
 - With this exception, Spring tries to tell you the problem it encountered. The exception message is quite clear: Spring deals with a circular dependency and the classes that caused the situation. Whenever you find such an exception, you need to go to the classes specified by the exception and eliminate the circular dependency.
 ## Choosing from multiple beans in the Spring context
 * * *
@@ -411,7 +411,7 @@ In this section, I’ll show you an alternative approach to directly calling the
 		- You can explicitly select a specific bean using the @Qualifier annotation, which we discuss in this chapter.
 		- If none of the beans is primary and you don’t use @Qualifier, the app will fail with an exception, complaining that the context contains more beans of the same type and Spring doesn’t know which one to choose.
 - The next listing shows you a configuration class that defines two Parrot instances and uses injection through the method parameters.
-	`
+	```
 	@Configuration
 	public class ProjectConfig {
 
@@ -437,19 +437,19 @@ In this section, I’ll show you an alternative approach to directly calling the
 		return p;
 	  }
 	}
-	`
+	```
 	❶ The name of the parameter matches the name of the bean representing parrot Miki.
 - Running the app with this configuration, you’d observe a console output similar to the next code snippet. Observe that Spring linked the person bean to the parrot named Miki because the bean representing this parrot has the name parrot2.
-	`
+	```
 	Parrot created
 	Person's name: Ella
 	Person's parrot: Parrot : Miki
-	`
+	```
 - One way to instruct Spring to provide you a specific instance from its context, when the context contains more than one instance of the same type, is to rely on the name of this instance. Just name the parameter the same as the instance you’d like Spring to provide you.
 	- ![c703776ce3dfbed162a0298136fb8861.png](../_resources/c703776ce3dfbed162a0298136fb8861.png)
 - In a real-world scenario, I prefer to avoid relying on the name of the parameter, which could be easily refactored and changed by mistake by another developer. To feel more comfortable, I usually choose a more visible approach to express my intention to inject a specific bean: using the **@Qualifier** annotation. Again, in my experience, I found developers arguing for and against using the **@Qualifier** annotation.
 - The following listing provides an example using the @Qualifier annotation. Observe that instead of having a specific identifier of the parameter, I now specify the bean I want to inject using the value attribute of the @Qualifier annotation.
-	`
+	```
 	@Configuration
 	public class ProjectConfig {
 
@@ -477,26 +477,26 @@ In this section, I’ll show you an alternative approach to directly calling the
 		return p;
 	  }
 	}
-	`
+	```
 	❶ Using the @Qualifier annotation, you clearly mark your intention to inject a specific bean from the context.
 - Rerunning the application, the app prints the same result into the console:
-	`
+	```
 	Parrot created
 	Person's name: Ella
 	Person's parrot: Parrot : Miki
-	`
+	```
 - A similar situation can also happen when using the @Autowired annotation. We define two beans of type Parrot (using the @Bean annotation) and an instance of Person (using stereotype annotations). I’ll configure Spring to inject one of the two parrot beans in the bean of type Person.
 - As presented in the next code snippet, I didn’t add the @Component annotation to the Parrot class because I intend to define the two beans of type Parrot using the @Bean annotation in the configuration class:
-	`
+	```
 	public class Parrot {
 
 	  private String name;
 
 	  // Omitted getters, setters, and toString()  
 	}
-	`
+	```
 - We define a bean of type Person using the @Component stereotype annotation. Observe the identifier I gave to the parameter of the constructor in the next code snippet. The reason I gave the identifier “parrot2” is this is the name I’ll also configure for the bean in the context I want Spring to inject into that parameter:
-	`
+	```
 	@Component
 	public class Person {
 
@@ -511,9 +511,9 @@ In this section, I’ll show you an alternative approach to directly calling the
 	  // Omitted getters and setters
 
 	}
-	`
+	```
 - I define two beans of type Parrot using the @Bean annotation in the configuration class. Don’t forget we still have to add @ComponentScan to tell Spring where to find the classes annotated with stereotype annotations. In our case, we annotated class Person with the @Component stereotype annotation. The next listing shows the definition of the configuration class.
-	`
+	```
 	@Configuration
 	@ComponentScan(basePackages = "beans")
 	public class ProjectConfig {
@@ -532,10 +532,10 @@ In this section, I’ll show you an alternative approach to directly calling the
 		return p;
 	  }
 	}
-	`
+	```
 	❶ With the current setup, the bean named parrot2 is the one that Spring injects into the Person bean.
 - What happens if you run a main method as the one presented in the next code snippet? Our person owns which parrot? Because the name of the constructor’s parameter matches one of the bean’s names in the Spring context (parrot2), Spring injects that bean, so the name of the parrot the app prints in the console is Miki:
-	`
+	```
 	public class Main {
 
 	  public static void main(String[] args) {
@@ -548,17 +548,17 @@ In this section, I’ll show you an alternative approach to directly calling the
 		System.out.println("Person's parrot: " + p.getParrot());
 	  }
 	}
-	`
+	```
 - When the Spring context contains multiple beans of the same type, Spring will select the bean whose name matches the name of the parameter.
 	- ![9e062d0c589b41f88d0c914bcc1ea6cd.png](../_resources/9e062d0c589b41f88d0c914bcc1ea6cd.png)
 - Running this app, the console shows the following output:
-	`
+	```
 	Person's name: Ella
 	Person's parrot: Parrot : Miki
-	`
+	```
 - As we discussed for the @Bean annotated method parameter, I recommend against relying on the name of the variable. Instead, I prefer using the **@Qualifier** annotation to express my intention clearly: I inject a specific bean from the context. This way, we minimize the chance that someone would refactor the name of the variable and thus affect how the app works.
 - Look at the change I made to the Person class in the next code snippet. Using the @Qualifier annotation, I specify the name of the bean I want Spring to inject from the context, and I don’t rely on the identifier of the constructor’s parameter.
-	`
+	```
 	@Component
 	public class Person {
 
@@ -573,5 +573,5 @@ In this section, I’ll show you an alternative approach to directly calling the
 	 // Omitted getters and setters
 
 	}
-	`
+	```
 - The behavior of the app doesn’t change, and the output remains the same. This approach makes your code less subject to mistakes.
