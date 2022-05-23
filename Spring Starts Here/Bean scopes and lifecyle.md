@@ -367,117 +367,118 @@
 - Say you design an object named `CommentProcessor` that processes the comments and validates them.
 - A service uses the `CommentProcessor` object to implement a use case. But the `CommentProcessor` object stores the comment to be processed as an attribute, and its methods change this attribute.
 - A service class uses a mutable object to implement the logic of a use case.
-	- ![2fdf5570899d5124c6f51969492bcfbd.png](../_resources/2fdf5570899d5124c6f51969492bcfbd.png)
+    - ![2fdf5570899d5124c6f51969492bcfbd.png](../_resources/2fdf5570899d5124c6f51969492bcfbd.png)
 - The next listing shows the implementation of the `CommentProcessor` bean.
-	```
-	public class CommentProcessor {
-	  private Comment comment;
+    ```
+    public class CommentProcessor {
+      private Comment comment;
 
-	  public void setComment(Comment comment) {
-		this.comment = comment;
-	  }
+      public void setComment(Comment comment) {
+        this.comment = comment;
+      }
 
-	  public void getComment() {
-		return this.comment;   
-	  }
+      public void getComment() {
+        return this.comment;   
+      }
 
-	  public void processComment() {      ❶
-		// changing the comment attribute
-	  }
+      public void processComment() {      ❶
+        // changing the comment attribute
+      }
 
-	  public void validateComment() {     ❶
-		// validating and changing the comment attribute
-	  }
-	}
-	```
-	❶ These two methods alter the value of the Comment attribute.
+      public void validateComment() {     ❶
+        // validating and changing the comment attribute
+      }
+    }
+    ```
+    ❶ These two methods alter the value of the Comment attribute.
 - The next listing presents this service that uses the `CommentProcessor` class to implement a use case. The service method creates an instance of `CommentProcessor` using the class’s constructor and then uses the instance in the method’s logic.
-	```
-	@Service
-	public class CommentService {
+    ```
+    @Service
+    public class CommentService {
 
-	  public void sendComment(Comment c) {
-		CommentProcessor p = new CommentProcessor();  ❶
+      public void sendComment(Comment c) {
+        CommentProcessor p = new CommentProcessor();  ❶
 
-		p.setComment(c);                              ❷
-		p.processComment(c);                          ❷
-		p.validateComment(c);                         ❷
+        p.setComment(c);                              ❷
+        p.processComment(c);                          ❷
+        p.validateComment(c);                         ❷
 
-		c = p.getComment();                           ❸
-		// do something further
-	  }
-	}
-	```
-	❶ Creates a CommentProcessor instance
-	❷ Uses the CommentProcessor instance to alter the Comment instance
-	❸ Gets the modified Comment instance and uses it further
+        c = p.getComment();                           ❸
+        // do something further
+      }
+    }
+    ```
+    ❶ Creates a CommentProcessor instance
+    ❷ Uses the CommentProcessor instance to alter the Comment instance
+    ❸ Gets the modified Comment instance and uses it further
 - The `CommentProcessor` object is not even a bean in the Spring context. **Does it need to be a bean? It’s critical you ask yourself this question before deciding to make any object a bean. Remember that an object needs to be a bean in the context only if Spring needs to manage it to augment the object with some capability the framework offers.** If we leave our scenario like this, the `CommentProcessor` object doesn’t need to be a bean at all.
 - But let’s suppose further that the `CommentProcessor` bean needs to use an object `CommentRepository` to persist some data, and `CommentRepository` is a bean in the Spring context.
 - If the `CommentProcessor` object needs to use an instance of `CommentRepository`, the easiest way to get an instance is to request a DI. But to do this, Spring needs to know about `CommentProcessor`, so the `CommentProcessor` object needs to be a bean in the context.
-	- ![1001d00171e558485c662787d39f6417.png](../_resources/1001d00171e558485c662787d39f6417.png)
+    - ![1001d00171e558485c662787d39f6417.png](../_resources/1001d00171e558485c662787d39f6417.png)
 - In this scenario, the `CommentProcessor` bean needs to become a bean to benefit from the DI capability Spring offers. **In general, in any case where we want Spring to augment the object with a specific capability, it needs to be a bean.**
 - We make `CommentProcessor` a bean in the Spring context. **But can it be singleton-scoped? No. If we define this bean as singleton and multiple threads use it concurrently, we get into a race condition.** We would not be sure which comment provided by which thread is processed and if the comment was processed correctly.
 - In this scenario, we want each method call to get a different instance of the `CommentProcessor` object. We can change the `CommentProcessor` class to be a prototype bean, as presented in the next code snippet:
-	```
-	@Component
-	@Scope(BeanDefinition.SCOPE_PROTOTYPE)
-	public class CommentProcessor {
+    ```
+    @Component
+    @Scope(BeanDefinition.SCOPE_PROTOTYPE)
+    public class CommentProcessor {
 
-	  @Autowired
-	  private CommentRepository commentRepository;
+      @Autowired
+      private CommentRepository commentRepository;
 
-	  // Omitted code
-	}
-	```
+      // Omitted code
+    }
+    ```
 - You can now get an instance of `CommentProcessor` from the Spring context. But be careful! You need this instance for every call of the `sendComment()` method, so the request to the bean should be inside the method itself. To achieve such a result, you can directly inject the Spring context (`ApplicationContext`) into the `CommentService` bean using `@Autowired`. In the `sendComment()` method, you retrieve the `CommentProcessor` instance using `getBean()` from the application context, as presented in the next listing.
-	```
-	@Service
-	public class CommentService {
+    ```
+    @Service
+    public class CommentService {
 
-	  @Autowired
-	  private ApplicationContext context;
+      @Autowired
+      private ApplicationContext context;
 
-	  public void sendComment(Comment c) {
-		CommentProcessor p = 
-		  context.getBean(CommentProcessor.class);     ❶
+      public void sendComment(Comment c) {
+        CommentProcessor p = 
+          context.getBean(CommentProcessor.class);     ❶
 
-		p.setComment(c);   
-		p.processComment(c);   
-		p.validateComment(c);   
+        p.setComment(c);   
+        p.processComment(c);   
+        p.validateComment(c);   
 
-		c = p.getComment();   
-		// do something further
-	  }
-	}
-	```
-	❶ A new CommentProcessor instance is always provided here.
+        c = p.getComment();   
+        // do something further
+      }
+    }
+    ```
+    ❶ A new CommentProcessor instance is always provided here.
 - Don’t make the mistake of injecting the `CommentProcessor` directly in the `CommentService` bean. **The `CommentService` bean is a singleton, which means that Spring creates only an instance of this class. As a consequence, Spring will also inject the dependencies of this class just once when it creates the `CommentService` bean itself.** In this case, you’ll end up with only an instance of the `CommentProcessor`. Each call of the `sendComment()` method will use this unique instance, so with multiple threads you’ll run into the same race condition issues as with a singleton bean. The next listing presents this approach. Use this as an exercise to try out and prove this behavior.
-	```
-	@Service
-	public class CommentService {
+    ```
+    @Service
+    public class CommentService {
 
-	  @Autowired
-	  private CommentProcessor p;       ❶
+      @Autowired
+      private CommentProcessor p;       ❶
 
-	  public void sendComment(Comment c) {
+      public void sendComment(Comment c) {
 
-		p.setComment(c);   
-		p.processComment(c);   
-		p.validateComment(c);   
+        p.setComment(c);   
+        p.processComment(c);   
+        p.validateComment(c);   
 
-		c = p.getComment();   
-		// do something further
-	  }
-	}
-	```
-	❶ Spring injects this bean when creating the CommentService bean. But because CommentService is singleton, Spring will also create and inject the CommentProcessor just once.
+        c = p.getComment();   
+        // do something further
+      }
+    }
+    ```
+    ❶ Spring injects this bean when creating the CommentService bean. But because CommentService is singleton, Spring will also create and inject the CommentProcessor just once.
 - I conclude this section by giving you my opinion about using prototype beans. **I generally prefer to avoid using them, and mutable instances in general, in the apps I develop.**
 - **But sometimes you need to refactor or work with old applications.** In my case, I faced such a scenario when I worked in an app refactoring for adding Spring to an old application. **That app used mutating objects in many places, and refactoring all these places in a short time was impossible. We needed to use prototype bean, which allowed the team to refactor each of these cases progressively.**
 - A quick comparison between singleton and prototype bean scopes.
-| Singleton                                                                                           | Prototype                                                                                             |
-| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| The framework associates a name with an actual object instance.                                     | A name is associated with a type.                                                                     |
-| Every time you refer to a bean name you’ll get the same object instance.                            | Every time you refer to a bean name, you get a new instance.                                          |
-| You can configure Spring to create the instances when the context is loaded or when first referred. | The framework always creates the object instances for the prototype scope when you refer to the bean. |
-| Singleton is the default bean scope in Spring.                                                      | You need to explicitly mark a bean as a prototype.                                                    |
-| It’s not recommended that a singleton bean to have mutable attributes.                              | A prototype bean can have mutable attributes.                                                         |
+
+  | Singleton                                                                                           | Prototype                                                                                             |
+  | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+  | The framework associates a name with an actual object instance.                                     | A name is associated with a type.                                                                     |
+  | Every time you refer to a bean name you’ll get the same object instance.                            | Every time you refer to a bean name, you get a new instance.                                          |
+  | You can configure Spring to create the instances when the context is loaded or when first referred. | The framework always creates the object instances for the prototype scope when you refer to the bean. |
+  | Singleton is the default bean scope in Spring.                                                      | You need to explicitly mark a bean as a prototype.                                                    |
+  | It’s not recommended that a singleton bean to have mutable attributes.                              | A prototype bean can have mutable attributes.                                                         |
