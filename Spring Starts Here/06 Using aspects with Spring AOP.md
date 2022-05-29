@@ -1,4 +1,4 @@
-# Using aspects with Spring AOP
+# 06 Using aspects with Spring AOP
 - Thus far, we have discussed the **Spring context**, and the only Spring capability we have used is **DI, which is supported by the IoC principle.** With DI, the framework manages objects you define, and you can request to use these objects where you need them.
 - To request a bean’s reference, in most cases, you use the `@Autowired` annotation. When you request such an object from the Spring context, we say that **Spring “injects” the object where you requested it.**
 - **Aspects** are a way the framework intercepts method calls and possibly alters the execution of methods.

@@ -1,4 +1,4 @@
-# Wiring Beans
+# 03 Wiring Beans
 - We need to refer from one bean to another in a straightforward fashion—by telling Spring to provide a reference to an instance from its context where we need it. This way, we establish relationships among the beans (one bean will have a reference to another to delegate calls when it needs). As you probably already know, often in any object-oriented programming language, an object needs to delegate specific responsibilities to others when implementing their behavior, so you need to know how to establish such relationships among objects when you use Spring as a framework as well.
 - We start by implementing a relationship between two beans you’ll define in the configuration class by using the **@Bean** annotation. Here we discuss two ways you can establish the relationships among beans:
 	- Link the beans by directly calling the methods that create them (which we’ll call wiring).

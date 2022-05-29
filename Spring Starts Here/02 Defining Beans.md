@@ -1,4 +1,4 @@
-# Defining Beans
+# 02 Defining Beans
 - Depending on the action, you’ll choose a specific way to add the bean. You can add beans in the context in the following ways:
 	- Using the @Bean annotation
 	- Using stereotype annotations

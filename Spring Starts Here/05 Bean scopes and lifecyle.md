@@ -1,4 +1,4 @@
-# Bean scopes and lifecyle
+# 05 Bean scopes and lifecyle
 - Thus far we have discussed several essential things about object instances managed by Spring (beans).
 - But we didn’t focus on how and when Spring creates the beans. From this perspective, we’ve only relied on the framework’s default approaches.
 - Production apps’ scenarios are complex, and sometimes relying on the framework’s default behavior is not enough. For this reason, in this chapter we need to go a bit deeper with our discussion on how Spring manages the beans in its context.

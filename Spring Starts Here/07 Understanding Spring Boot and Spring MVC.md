@@ -1,4 +1,4 @@
-# Understanding Spring Boot and Spring MVC
+# 07 Understanding Spring Boot and Spring MVC
 - Now that you know all the needed Spring basics, let’s focus on web apps and how you use Spring to implement them. You can use all the Spring capabilities we’ve discussed to implement any kind of app. But often with Spring, the applications you implement are web apps.
 - Spring makes web app development straightforward. We’ll start this chapter by discussing what web apps are and how they work.
 - To implement web apps, we’ll use **a project in the Spring ecosystem named Spring Boot.**

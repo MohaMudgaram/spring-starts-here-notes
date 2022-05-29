@@ -1,4 +1,4 @@
-# Using Abstractions
+# 04 Using Abstractions
 - In this chapter, we discuss using abstraction with Spring beans. This topic is essential because in real-world projects, we often use abstractions to decouple implementations. As you’ll learn in this chapter, we ensure our application is comfortable to maintain and test by decoupling implementations.
 - we begin by discussing objects’ responsibilities and find out how they fit in a standard class design of an app.
 ## Using interfaces to define contracts
